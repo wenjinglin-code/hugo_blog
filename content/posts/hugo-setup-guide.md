@@ -51,7 +51,7 @@ git submodule add https://github.com/matcornic/hugo-theme-learn.git themes/hugo-
 ### 创建内容
 
 ```bash
-hugo new posts/xxx.md
+hugo new posts/xxx.md # 文件会创建在 content/posts 目录下，也可直接复制 md 文件到这里
 ```
 
 ### 更新索引标签

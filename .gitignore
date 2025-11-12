@@ -9,6 +9,7 @@ resources/_gen/
 *.so
 *.dylib
 *.png
+*.patch
 
 # IDE
 .vscode/

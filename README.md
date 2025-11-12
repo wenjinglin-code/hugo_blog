@@ -51,8 +51,16 @@ hugo server -D
 ### 创建新文章
 
 ```bash
-hugo new posts/xxx.md
+hugo new posts/xxx.md # 文件会创建在 content/posts 目录下，也可直接复制 md 文件到这里
 ```
+
+### 导入 notion md 文件，还有点问题
+```bash
+1. Notion 导出包含 sub pages 的文件时，要选择包含子页，及为子页创建文件夹
+2. 导出的 md 文件，要去掉文件名后面的 md5 值，以及引用这个文件的对应地方也要改
+3. 父级目录里面用到的资源要去掉第一级目录，注意引用 md 文件不用去除
+```
+
 
 ### 文章格式
 
