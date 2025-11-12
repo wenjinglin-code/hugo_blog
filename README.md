@@ -97,10 +97,11 @@ categories = ["分类"]
    ```bash
    cd public
    git init
-   git remote add origin https://github.com/your-username/your_username.github.io.git
+   git remote add origin git@github.com:wenjinglin-code/wenjinglin-code.github.io.git
+   git pull origin  master
    git add .
    git commit -m "Deploy to GitHub Pages"
-   git push -u origin
+   git push --set-upstream origin master
    ```
 4. 在仓库的 Settings 中找到 `Pages` 选项
    ```bash
