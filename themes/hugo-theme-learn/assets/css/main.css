@@ -14,7 +14,7 @@ body {
 
 /* 容器 */
 .container {
-  width: auto;
+  width: auto; /* 根据窗口大小，动态调整页面大小 */
   max-width: 2500px;
   margin: 0 auto;
   background-color: #fff;
@@ -76,6 +76,7 @@ body {
   flex: 1;
   padding: 2rem;
   gap: 2rem;
+  /* overflow: hidden; 控制内容溢出，侧边栏不跟随页面*/
 }
 
 /* 侧边栏 */
@@ -91,7 +92,7 @@ body {
 }
 
 .sidebar h3 {
-  width: auto;
+  width: auto; /* 根据字数调整侧边栏宽度 */
   margin-top: 0;
   color: #2c3e50;
   border-bottom: 1px solid #eee;
@@ -102,7 +103,7 @@ body {
 .sidebar ul {
   width: auto;
   list-style: none;
-  padding-left: 1rem;
+  padding-left: 1rem; /* 内容提供层级关系 */
 }
 
 .sidebar ul li {
@@ -131,7 +132,7 @@ body {
   border-radius: 4px;
   padding: 2rem;
   max-width: 100%;
-  overflow: hidden;
+  overflow: hidden; /* 防止内容溢出，限制内容宽度，图片太大会根据窗口限制大小 */
   word-wrap: break-word;
 }
 

@@ -1,15 +1,12 @@
 +++
-title = "Hugo 知识库搭建指南"
+title = "Hugo 博客搭建指南"
 date = 2023-11-11T00:00:00+08:00
-tags = ["Hugo", "静态网站", "知识库"]
-categories = ["技术文档"]
+tags = ["hugo", "静态网站", "知识库"]
+categories = ["环境配置教程"]
 +++
 
-# Hugo 知识库搭建指南
-
-Hugo 是一个快速、现代的静态网站生成器，非常适合搭建个人知识库。
-
 ## 为什么选择 Hugo
+Hugo 是一个快速、现代的静态网站生成器，非常适合搭建个人博客。
 
 1. **速度快** - 生成网站的速度极快
 2. **易于部署** - 可以轻松部署到 GitHub Pages 等平台
@@ -36,48 +33,57 @@ brew install hugo
 sudo apt-get install hugo
 ```
 
-## 创建新站点
+## hugo 使用
+### 创建新站点
 
 ```bash
-hugo new site my-knowledge-base
-cd my-knowledge-base
+hugo new site my-blog
+cd my-blog
 ```
 
-## 添加主题
+### 添加主题
 
 ```bash
 git init
 git submodule add https://github.com/matcornic/hugo-theme-learn.git themes/hugo-theme-learn
 ```
 
-## 创建内容
+### 创建内容
 
 ```bash
-cp xxx.md content/posts/
+hugo new posts/xxx.md
 ```
 
-## 更新内容
+### 更新索引标签
 
 ```bash
 hugo --cleanDestinationDir
 ```
 
-## 启动服务
+### 启动服务
 
 ```bash
 hugo server -D
-
-# hugo server --disableFastRender
 ```
 
-## 部署到 GitHub Pages
+## [部署到 GitHub Pages](https://docs.github.com/zh/pages/quickstart)
 
 1. 在 GitHub 上创建新仓库
+   ```bash
+   github 上新建一个仓库，名为 username.github.io，username 为你的用户名
+   ```
 2. 构建网站：
    ```bash
+   cd my-blog
    hugo
    ```
-3. 将 public 目录推送到 GitHub Pages
+3. 将 public 目录推送到 username.github.io 仓库
+4. 在仓库的 Settings 中找到 `Pages` 选项
+   ```bash
+   1. Build and deployment -> Source: 选择 Deploy from a branch
+   2. Build and deployment -> Branch: 选择 上传代码的对应分支，按下 Save 保存
+   ```
+5. 访问 `https://username.github.io/`
 
 ## 最佳实践
 

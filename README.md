@@ -1,6 +1,6 @@
-# 个人知识库
+# 个人博客
 
-这是一个基于 Hugo 构建的个人知识库网站，使用了修改版的 Learn 主题。
+这是一个基于 Hugo 构建的个人博客网站，使用了修改版的 Learn 主题。
 
 ## 功能特点
 
@@ -11,7 +11,7 @@
 - 标签和分类功能
 - 归档页面
 - 客户端搜索功能
-- 易于部署到 GitHub Pages 或 Read the Docs
+- 易于部署到 GitHub Pages
 
 ## 本地运行
 
@@ -33,14 +33,15 @@ sudo apt-get install hugo
 ### 克隆仓库
 
 ```bash
-git clone <repository-url>
-cd my-knowledge-base
+git clone https://github.com/wenjinglin-code/hugo_blog.git
+cd hugo_blog
 ```
 
 ### 启动本地服务器
 
 ```bash
-hugo server
+hugo --cleanDestinationDir # 更新索引
+hugo server -D
 ```
 
 然后在浏览器中访问 `http://localhost:1313` 查看网站。
@@ -50,7 +51,7 @@ hugo server
 ### 创建新文章
 
 ```bash
-hugo new knowledge/your-article-name.md
+hugo new posts/xxx.md
 ```
 
 ### 文章格式
@@ -69,11 +70,16 @@ categories = ["分类"]
 
 文章内容...
 ```
+## [部署到 GitHub Pages](https://docs.github.com/zh/pages/quickstart)
 
-## 部署到 GitHub Pages
+   ```
 
-1. 在 GitHub 上创建一个新仓库（例如：`your-username.github.io`）
+## [部署到 GitHub Pages](https://docs.github.com/zh/pages/quickstart)
 
+1. 在 GitHub 上创建新仓库
+   ```bash
+   github 上新建一个仓库，名为 username.github.io，username 为你的用户名
+   ```
 2. 构建网站：
    ```bash
    hugo
@@ -83,28 +89,17 @@ categories = ["分类"]
    ```bash
    cd public
    git init
-   git remote add origin https://github.com/your-username/your-username.github.io.git
+   git remote add origin https://github.com/your-username/your_username.github.io.git
    git add .
    git commit -m "Deploy to GitHub Pages"
-   git push -u origin main
+   git push -u origin
    ```
-
-4. 在 GitHub 仓库设置中，找到 "Pages" 选项，选择 `main` 分支的根目录作为 GitHub Pages 源。
-
-## 部署到 Read the Docs
-
-1. 在 Read the Docs 网站上注册并登录账户
-
-2. 点击 "Import a Project"
-
-3. 选择您的 GitHub 仓库
-
-4. 配置项目设置：
-   - Name: 项目名称
-   - Repository URL: 您的 GitHub 仓库 URL
-   - Default branch: main
-
-5. Read the Docs 会自动检测并构建您的 Hugo 项目
+4. 在仓库的 Settings 中找到 `Pages` 选项
+   ```bash
+   1. Build and deployment -> Source: 选择 Deploy from a branch
+   2. Build and deployment -> Branch: 选择 master，按下 Save 保存
+   ```
+5. 访问 `https://your_username.github.io/`
 
 ## 自定义配置
 
@@ -137,7 +132,7 @@ weight = 1
 ## 目录结构
 
 ```
-my-knowledge-base/
+hugo_blog/
 ├── archetypes/          # 内容模板
 ├── assets/              # 静态资源
 ├── content/             # 内容文件
