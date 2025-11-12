@@ -1,0 +1,24 @@
+# Hugo
+public/
+resources/_gen/
+
+# Build
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.png
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Hugo cache
+.hugo_cache/

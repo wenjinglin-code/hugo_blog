@@ -1,0 +1,30 @@
+{{ define "main" }}
+<div class="content">
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  
+  <!-- 按年份分组显示文章 -->
+  {{ if eq .Section "posts" }}
+    {{ $allPages := .Pages }}
+    {{ range ($allPages.GroupByDate "2006") }}
+      <h2>{{ .Key }}</h2>
+      <ul>
+        {{ range .Pages }}
+          <li>
+            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+            <span class="date">({{ .Date.Format "2006-01-02" }})</span>
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
+  {{ else }}
+    <ul>
+      {{ range .Pages }}
+        <li>
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+</div>
+{{ end }}
