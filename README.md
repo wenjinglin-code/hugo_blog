@@ -80,10 +80,6 @@ categories = ["分类"]
 ```
 ## [部署到 GitHub Pages](https://docs.github.com/zh/pages/quickstart)
 
-   ```
-
-## [部署到 GitHub Pages](https://docs.github.com/zh/pages/quickstart)
-
 1. 在 GitHub 上创建新仓库
    ```bash
    github 上新建一个仓库，名为 username.github.io，username 为你的用户名
