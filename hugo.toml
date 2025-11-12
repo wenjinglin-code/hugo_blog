@@ -55,3 +55,10 @@ tag = "tags"
 # 归档页面配置
 [permalinks]
   posts = "/:year/:month/:filename/"
+
+# 配置 toc 的起始级别，不配置会丢第一级
+[markup]
+  [markup.tableOfContents]
+    startLevel = 1
+    endLevel = 4
+    ordered = false

@@ -82,6 +82,7 @@ body {
 /* 侧边栏 */
 .sidebar {
   width: auto;
+  max-width: 500px;
   background: #fafafa;
   border: 1px solid #eaeaea;
   border-radius: 4px;
@@ -102,7 +103,6 @@ body {
 
 .sidebar ul {
   width: auto;
-  list-style: none;
   padding-left: 1rem; /* 内容提供层级关系 */
 }
 
