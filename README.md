@@ -56,6 +56,7 @@ hugo new posts/xxx.md # 文件会创建在 content/posts 目录下，也可直�
 
 ### 导入 notion md 文件，还有点问题，需要用脚本处理
 ```bash
+# Notion 导出包含 sub pages 的文件时，要选择包含子页，及为子页创建文件夹
 python3 restructure_directories.py your_notion_output_dir 'tags' 'categories'
 
 # 例如
