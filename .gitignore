@@ -10,6 +10,7 @@ resources/_gen/
 *.dylib
 *.png
 *.patch
+*.rpm
 
 # IDE
 .vscode/
