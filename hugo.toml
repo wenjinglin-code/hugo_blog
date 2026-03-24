@@ -54,7 +54,7 @@ tag = "tags"
 
 # 归档页面配置
 [permalinks]
-  posts = "/:year/:month/:filename/"
+  posts = "/posts/:year/:month/:slug/"
 
 # 配置 toc 的起始级别，不配置会丢第一级
 [markup]
