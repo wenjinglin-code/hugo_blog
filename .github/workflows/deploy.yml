@@ -28,7 +28,7 @@ jobs:
           extended: true
 
       - name: Build
-        run: hugo --minify --baseURL https://wenjinglin-code.github.io
+        run: hugo --cleanDestinationDir;hugo --minify --baseURL https://wenjinglin-code.github.io
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
