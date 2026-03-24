@@ -1,4 +1,4 @@
-baseURL = 'https://wenjinglin-code.github.io'
+baseURL = 'https://wenjinglin-code.github.io/hugo_blog/'
 languageCode = 'zh-cn'
 defaultContentLanguage = 'zh-cn'
 title = '我的个人知识库'
