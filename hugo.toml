@@ -1,4 +1,4 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://wenjinglin-code.github.io'
 languageCode = 'zh-cn'
 defaultContentLanguage = 'zh-cn'
 title = '我的个人知识库'
@@ -62,3 +62,13 @@ tag = "tags"
     startLevel = 1
     endLevel = 4
     ordered = false
+  [markup.highlight]
+    # 使用 GitHub 风格的代码高亮
+    style = "monokai"
+    noClasses = true
+    lineNos = true
+    lineNumbersInTable = false
+    hl_Lines = ""
+    lineLengthStart = 0
+    tabWidth = 4
+    guessSyntax = true
