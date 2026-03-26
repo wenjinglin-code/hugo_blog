@@ -1,0 +1,300 @@
+From 8d736a93d99d997a145ccb834200bc4f5b2c3059 Mon Sep 17 00:00:00 2001
+From: Jinglin Wen <jinglin.wen@shingroup.cn>
+Date: Wed, 3 Apr 2024 10:57:59 +0800
+Subject: [PATCH] add early console
+
+---
+ arch/riscv/include/asm/early_console.h |  34 ++++++++
+ arch/riscv/kernel/Makefile             |   2 +
+ arch/riscv/kernel/early_console.c      | 116 +++++++++++++++++++++++++
+ arch/riscv/kernel/setup.c              |   3 +
+ drivers/tty/hvc/Kconfig                |   6 ++
+ drivers/tty/hvc/hvc_riscv_sbi.c        |  43 +++++++--
+ 6 files changed, 195 insertions(+), 9 deletions(-)
+ create mode 100644 arch/riscv/include/asm/early_console.h
+ create mode 100644 arch/riscv/kernel/early_console.c
+
+diff --git a/arch/riscv/include/asm/early_console.h b/arch/riscv/include/asm/early_console.h
+new file mode 100644
+index 000000000000..d7ac547fa064
+--- /dev/null
++++ b/arch/riscv/include/asm/early_console.h
+@@ -0,0 +1,34 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * (c) 2001, 2006 IBM Corporation.
++ */
++
++#ifndef _ASM_EARLY_CONSOLE_H
++#define _ASM_EARLY_CONSOLE_H
++#ifdef __KERNEL__
++
++#include <linux/compiler.h>
++#include <linux/init.h>
++
++#ifdef CONFIG_RISCV_EARLY_CONSOLE
++extern void (*riscv_early_console_putc)(char c);
++// extern int (*riscv_early_console_getc)(void);
++// extern int (*riscv_early_console_getc_poll)(void);
++
++void early_console_puts(const char *s);
++int early_console_write(const char *s, int n);
++
++void register_early_console(void);
++void early_console_printf(const char *fmt, ...)
++	__attribute__ ((format (printf, 1, 2)));
++void early_console_progress(char *s, unsigned short hex);
++
++void __init early_console_init(void);
++#endif /* CONFIG_RISCV_EARLY_CONSOLE */
++
++#ifdef CONFIG_HVC_RISCV_SBI
++void __init hvc_sbi_early_init(void);
++#endif /* CONFIG_HVC_RISCV_SBI */
++
++#endif /* __KERNEL__ */
++#endif /* _ASM_EARLY_CONSOLE_H */
+diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
+index 81d94a8ee10f..547fdcfae318 100644
+--- a/arch/riscv/kernel/Makefile
++++ b/arch/riscv/kernel/Makefile
+@@ -62,6 +62,8 @@ obj-y	+= probes/
+ obj-y	+= tests/
+ obj-$(CONFIG_MMU) += vdso.o vdso/
+ 
++obj-$(CONFIG_RISCV_EARLY_CONSOLE)	+= early_console.o
++
+ obj-$(CONFIG_RISCV_MISALIGNED)	+= traps_misaligned.o
+ obj-$(CONFIG_RISCV_MISALIGNED)	+= unaligned_access_speed.o
+ obj-$(CONFIG_RISCV_PROBE_UNALIGNED_ACCESS)	+= copy-unaligned.o
+diff --git a/arch/riscv/kernel/early_console.c b/arch/riscv/kernel/early_console.c
+new file mode 100644
+index 000000000000..4ed9943aa6b9
+--- /dev/null
++++ b/arch/riscv/kernel/early_console.c
+@@ -0,0 +1,116 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * polling mode stateless debugging stuff, originally for NS16550 Serial Ports
++ *
++ * c 2001 PPC 64 Team, IBM Corp
++ */
++
++#include <linux/stdarg.h>
++#include <linux/types.h>
++#include <linux/sched.h>
++#include <linux/console.h>
++#include <linux/init.h>
++#include <asm/processor.h>
++#include <asm/early_console.h>
++
++
++void (*riscv_early_console_putc)(char c);
++
++/*
++ * Early debugging facilities. You can enable _one_ of these via .config,
++ * if you do so your kernel _will not boot_ on anything else. Be careful.
++ */
++void __init early_console_init(void)
++{
++
++// 赋值给 riscv_early_console_putc
++#ifdef CONFIG_HVC_RISCV_SBI
++	hvc_sbi_early_init();
++#endif
++
++	console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
++	register_early_console();
++}
++
++/* udbg library, used by xmon et al */
++void early_console_puts(const char *s)
++{
++	if (riscv_early_console_putc) {
++		char c;
++
++		if (s && *s != '\0') {
++			while ((c = *s++) != '\0')
++				riscv_early_console_putc(c);
++		}
++	}
++#if 0
++	else {
++		printk("%s", s);
++	}
++#endif
++}
++
++int early_console_write(const char *s, int n)
++{
++	int remain = n;
++	char c;
++
++	if (!riscv_early_console_putc)
++		return 0;
++
++	if (s && *s != '\0') {
++		while (((c = *s++) != '\0') && (remain-- > 0)) {
++			riscv_early_console_putc(c);
++		}
++	}
++	
++	return n - remain;
++}
++
++#define UDBG_BUFSIZE 256
++void early_console_printf(const char *fmt, ...)
++{
++	if (riscv_early_console_putc) {
++		char buf[UDBG_BUFSIZE];
++		va_list args;
++
++		va_start(args, fmt);
++		vsnprintf(buf, UDBG_BUFSIZE, fmt, args);
++		early_console_puts(buf);
++		va_end(args);
++	}
++}
++
++void __init early_console_progress(char *s, unsigned short hex)
++{
++	early_console_puts(s);
++	early_console_puts("\n");
++}
++
++/*
++ * Early boot console based on udbg
++ */
++static void riscv_early_console_write(struct console *con, const char *s,
++		unsigned int n)
++{
++	early_console_write(s, n);
++}
++
++static struct console riscv_early_console = {
++	.name	= "early_console",
++	.write	= riscv_early_console_write,
++	.flags	= CON_PRINTBUFFER | CON_ENABLED | CON_BOOT | CON_ANYTIME,
++	.index	= 0,
++};
++
++/*
++ * Called by setup_system after ppc_md->probe and ppc_md->early_init.
++ * Call it again after setting udbg_putc in ppc_md->setup_arch.
++ */
++void __init register_early_console(void)
++{
++	if (!riscv_early_console_putc)
++		return;
++
++	register_console(&riscv_early_console);
++}
+diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
+index 4f73c0ae44b2..a944f57e7118 100644
+--- a/arch/riscv/kernel/setup.c
++++ b/arch/riscv/kernel/setup.c
+@@ -36,6 +36,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/kasan.h>
+ #include <asm/efi.h>
++#include <asm/early_console.h>
+ 
+ #include "head.h"
+ 
+@@ -251,6 +252,8 @@ void __init setup_arch(char **cmdline_p)
+ 	parse_dtb();
+ 	setup_initial_init_mm(_stext, _etext, _edata, _end);
+ 
++	early_console_init();
++
+ 	*cmdline_p = boot_command_line;
+ 
+ 	early_ioremap_setup();
+diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
+index c2a4e88b328f..1191b7a96c96 100644
+--- a/drivers/tty/hvc/Kconfig
++++ b/drivers/tty/hvc/Kconfig
+@@ -106,6 +106,12 @@ config HVC_DCC_SERIALIZE_SMP
+ 	  CPU hotplug to work. For example, during early chipset bringups without
+ 	  debug serial console support. If unsure, say N.
+ 
++config RISCV_EARLY_CONSOLE
++	bool "riscv early console"
++	depends on RISCV
++	help
++	  For early startup, use printk output.
++
+ config HVC_RISCV_SBI
+ 	bool "RISC-V SBI console support"
+ 	depends on RISCV_SBI && NONPORTABLE
+diff --git a/drivers/tty/hvc/hvc_riscv_sbi.c b/drivers/tty/hvc/hvc_riscv_sbi.c
+index cede8a572594..36cfe984bf08 100644
+--- a/drivers/tty/hvc/hvc_riscv_sbi.c
++++ b/drivers/tty/hvc/hvc_riscv_sbi.c
+@@ -12,6 +12,7 @@
+ #include <linux/types.h>
+ 
+ #include <asm/sbi.h>
++#include <asm/early_console.h>
+ 
+ #include "hvc_console.h"
+ 
+@@ -63,21 +64,45 @@ static const struct hv_ops hvc_sbi_dbcn_ops = {
+ static int __init hvc_sbi_init(void)
+ {
+ 	int err;
++	const struct hv_ops *ops;
+ 
+ 	if (sbi_debug_console_available) {
+-		err = PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_dbcn_ops, 256));
+-		if (err)
+-			return err;
+-		hvc_instantiate(0, 0, &hvc_sbi_dbcn_ops);
++		ops = &hvc_sbi_dbcn_ops;
+ 	} else if (IS_ENABLED(CONFIG_RISCV_SBI_V01)) {
+-		err = PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_v01_ops, 256));
+-		if (err)
+-			return err;
+-		hvc_instantiate(0, 0, &hvc_sbi_v01_ops);
++		ops = &hvc_sbi_v01_ops;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+ 
+-	return 0;
++	hvc_instantiate(0, 0, ops); // 先检查 hvc_console 有没有注册
++	err = PTR_ERR_OR_ZERO(hvc_alloc(0, 0, ops, 256));
++	return err;
+ }
+ device_initcall(hvc_sbi_init);
++
++#ifdef CONFIG_RISCV_EARLY_CONSOLE
++static void sbi_early_putc(char c)
++{
++	unsigned int termno = 0;
++	int count = -1;
++
++	if (c == '\n')
++		sbi_early_putc('\r');
++
++	do {
++		count = hvc_sbi_tty_put(termno, &c, 1);
++	} while(count == 0 || count == -EAGAIN);
++}
++
++static void hvc_sbi_early_init_common(void)
++{
++	riscv_early_console_putc = sbi_early_putc;
++}
++
++void __init hvc_sbi_early_init(void)
++{
++	hvc_sbi_early_init_common();
++	add_preferred_console("hvc", 0, NULL); // 以便，成功注册hvc console
++	// hvc_instantiate(index, index, ops);
++}
++#endif /* CONFIG_RISCV_EARLY_CONSOLE */
+\ No newline at end of file
+-- 
+2.25.1
+

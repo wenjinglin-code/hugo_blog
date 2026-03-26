@@ -1,0 +1,67 @@
+From d6d4ea56bd6f85dd5f620aaa360dc1075fcbf390 Mon Sep 17 00:00:00 2001
+From: "jinglin.wen" <jinglin.wen@riscv-computing.com>
+Date: Fri, 16 Jan 2026 11:23:49 +0800
+Subject: [PATCH] riscv/iommu: support vfio to riscv
+
+---
+ arch/riscv/kvm/Kconfig      |  1 +
+ drivers/iommu/riscv/iommu.c | 16 ++++++++++++++++
+ drivers/vfio/Kconfig        |  2 +-
+ 3 files changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+index 77379f77840a..2743a3a2b320 100644
+--- a/arch/riscv/kvm/Kconfig
++++ b/arch/riscv/kvm/Kconfig
+@@ -32,6 +32,7 @@ config KVM
+ 	select VIRT_XFER_TO_GUEST_WORK
+ 	select KVM_GENERIC_MMU_NOTIFIER
+ 	select SCHED_INFO
++	select KVM_VFIO
+ 	select GUEST_PERF_EVENTS if PERF_EVENTS
+ 	help
+ 	  Support hosting virtualized guest machines.
+diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
+index d9429097a2b5..8e58c8ce1e8b 100644
+--- a/drivers/iommu/riscv/iommu.c
++++ b/drivers/iommu/riscv/iommu.c
+@@ -1537,7 +1537,23 @@ static void riscv_iommu_release_device(struct device *dev)
+ 	kfree_rcu_mightsleep(info);
+ }
+ 
++static bool riscv_iommu_capable(struct device *dev, enum iommu_cap cap)
++{
++    switch (cap) {
++    case IOMMU_CAP_CACHE_COHERENCY:
++        /* * 对于 QEMU 模拟环境，通常可以安全地返回 true。
++         * 在真实硬件上，应该检查 iommu->caps 寄存器的一致性位。
++         */
++        return true;
++    case IOMMU_CAP_NOEXEC:
++        return true;
++    default:
++        return false;
++    }
++}
++
+ static const struct iommu_ops riscv_iommu_ops = {
++	.capable = riscv_iommu_capable, // 添加这一行
+ 	.of_xlate = riscv_iommu_of_xlate,
+ 	.identity_domain = &riscv_iommu_identity_domain,
+ 	.blocked_domain = &riscv_iommu_blocking_domain,
+diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
+index ceae52fd7586..ad62205b4e45 100644
+--- a/drivers/vfio/Kconfig
++++ b/drivers/vfio/Kconfig
+@@ -39,7 +39,7 @@ config VFIO_GROUP
+ 
+ config VFIO_CONTAINER
+ 	bool "Support for the VFIO container /dev/vfio/vfio"
+-	select VFIO_IOMMU_TYPE1 if MMU && (X86 || S390 || ARM || ARM64)
++	select VFIO_IOMMU_TYPE1 if MMU && (X86 || S390 || ARM || ARM64 || RISCV)
+ 	depends on VFIO_GROUP
+ 	default y
+ 	help
+-- 
+2.43.0
+
