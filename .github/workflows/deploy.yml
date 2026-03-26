@@ -51,6 +51,10 @@ jobs:
           if-no-files-found: error
           retention-days: 0
           compression-level: 6
+          include-hidden-files: false
+          exclude: |
+            resources/**
+            .gitignore
 
       # 步骤 5: 部署到 GitHub Pages (仅在 master 分支触发时执行)
       - name: Deploy to GitHub Pages
