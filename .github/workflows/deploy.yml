@@ -20,7 +20,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      pages: write
+      id-token: write
     steps:
       # 步骤 1: 检出代码，包含子模块，获取完整历史
       - uses: actions/checkout@v3
