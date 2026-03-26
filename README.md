@@ -80,9 +80,21 @@ categories = ["分类"]
 文章内容...
 ```
 ## [部署到 GitHub Pages](https://docs.github.com/zh/pages/quickstart)
+
 >> 每次更新，需要等比较长时间才更新界面
-### 方法1: 使用 github action 自动部署到 github.io
+
+### 方法1: 使用 GitHub Actions 自动部署到 github.io (推荐)
+
 >> 依赖 `.github/workflows/deploy.yml` 自动编译部署配置文件
+
+**工作原理：**
+- 每次 push 代码到 `master` 分支时，GitHub Actions 会自动：
+  1. 拉取代码
+  2. 使用 Hugo 构建网站
+  3. 将生成的静态文件推送到 `gh-pages` 分支
+
+**配置步骤：**
+
 1. 在博客的源码仓库的 Settings 中找到 `Actions -> General` 选项
    ```bash
    # 给 actions 提供权限
@@ -96,6 +108,19 @@ categories = ["分类"]
    ```
 3. 仓库的 Settings 中找到 `Pages` 选项中，点击 `Visit site` 就可以访问了
    一般地址为 `https://username.github.io/repostory_name/`
+
+**手动触发部署：**
+如果想手动触发部署而不 push 代码：
+1. 进入仓库的 **Actions** 页面
+2. 选择 "Deploy to GitHub Pages" 工作流
+3. 点击 **Run workflow** -> 再次点击 **Run workflow**
+
+**触发自动部署：**
+```bash
+git add .
+git commit -m "更新博客内容"
+git push origin master
+```
 
 ### 方法2: 将静态页面部署到 github.io
 1. 在 GitHub 上创建新仓库
