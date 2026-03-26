@@ -39,11 +39,27 @@ jobs:
       - name: Build
         run: hugo --cleanDestinationDir;hugo --minify --baseURL https://wenjinglin-code.github.io/hugo_blog/
 
-      # 步骤 4: 部署到 GitHub Pages (仅在 master 分支触发时执行)
-      #         将构建成功后的 public 目录，push 到 gh-pages 分支
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/master'
+      # 使用 GitHub Action 
+      # 步骤 4: 上传构建产物到 Artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          name: github-pages
+          path: ./public
+          if-no-files-found: error
+          retention-days: 0
+
+      # 步骤 5: 部署到 GitHub Pages (仅在 master 分支触发时执行)
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/master'
+        uses: actions/deploy-pages@v4
+      
+      # 使用 Deploy from a branch
+      # 步骤 4: 部署到 GitHub Pages (仅在 master 分支触发时执行)
+      #         将构建成功后的 public 目录，push 到 gh-pages 分支，使用 gh-pages 分支作为 source
+      # - name: Deploy
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   if: github.ref == 'refs/heads/master'
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./public
