@@ -1,15 +1,16 @@
 +++
-title = "riscv mmu"
-date = 2025-11-12T00:00:00+08:00
-tags = ["riscv", "memory", "linux", "c3000"]
+title = "MMU"
+date = 2026-03-26T19:22:22.781097+08:00
+tags = ["riscv", "linux"]
 categories = ["riscv_linux"]
 +++
+# MMU
 
 # MMU 硬件原理（priv-isa ）
 
 ## 页表目录：**`satp` ,** 结构如下（大端）
 
-![Untitled](MMU/Untitled.png)
+![Untitled](Untitled.png)
 
 ### PPN: 一级页表的 `physical page number`
 
@@ -19,15 +20,15 @@ categories = ["riscv_linux"]
 
 ### MODE：标识是几级页表，虚拟地址长度
 
-![Untitled](MMU/Untitled%201.png)
+![Untitled](Untitled%201.png)
 
-- SV32（没有一些特殊属性（大页，页表类型））
+- SV32（没有一些特殊属性（大页，页表类型））（32bits va 转换为 34bits pa）
 
-![Untitled](MMU/Untitled%202.png)
+![Untitled](Untitled%202.png)
 
 - SV57
 
-![image.png](MMU/image.png)
+![image.png](image.png)
 
 `如果实现了 svadu 扩展，硬件会自动更新 pte.D/A bit，就不需要在 page-fault 中处理 D/A bit`
 
@@ -38,31 +39,33 @@ categories = ["riscv_linux"]
 
 `D bit 会在回写完毕后，置 0；A bit 会在页表回收机制中，置 0；`
 
+`U bit 用于控制该页面是否可以被 u-mode 访问，0:表示不可以访问，1:表示可以被访问，U=1 的时候，s-mode 也不能访问该 page，除非 sstatus.SUM = 1`
+
 # 大页支持
 
 ## page_size == PMD_SIZE / PUD_SIZE
 
 N 位好像只是告诉 MMU 这个 pte 是连续的pte，如果 `page_size == PMD_SIZE` 直接配置 pmd_t 为 pte 就可以了，对应的 pte.ppn[0] 要配置为 0
 
-![Untitled](MMU/Untitled%203.png)
+![Untitled](Untitled%203.png)
 
-![Untitled](MMU/Untitled%204.png)
+![Untitled](Untitled%204.png)
 
 ## page_size != PMD_SIZE / PUD_SIZE
 
 需要配置 N 位，告诉 MMU 这个 pte 是**`一个 NAPOT 范围`**的一部分
 
-![Untitled](MMU/Untitled%205.png)
+![Untitled](Untitled%205.png)
 
 目前只规定了 64k，page offset 怎么配套，没拿到 pte 前又不知道 pte 是大页？
 
 spec 有说明翻译的流程：
 
-![Untitled](MMU/Untitled%206.png)
+![Untitled](Untitled%206.png)
 
 大体架构：
 
-![Untitled](MMU/Untitled%207.png)
+![Untitled](Untitled%207.png)
 
 **`riscv / arm64 大页的意思，都是使用连续的 ptes 映射大 size 的 page，每个 pte 映射的还是 4k，只是 tlb 可以将多个 pte 映射，只用一个 entry 表示 va 到 大 size page 的映射，减少大内存映射对 tlb entry 的使用`**
 
@@ -128,7 +131,7 @@ pte_t arch_make_huge_pte(pte_t entry, unsigned int shift, vm_flags_t flags)
 
 ## va 范围
 
-![Untitled](MMU/Untitled%208.png)
+![Untitled](Untitled%208.png)
 
 ## 相关代码
 
@@ -200,7 +203,7 @@ struct kernel_mapping {
 
 ## **early_pg_dir、trampoline_pg_dir、** **swapper_pg_dir 的作用**
 
-![Untitled](MMU/Untitled%209.png)
+![Untitled](Untitled%209.png)
 
 ## 代码流程
 
@@ -249,15 +252,15 @@ kernel_thread/clone/clone3             -> kernel_clone                     -> co
 
 最新的 isa 说明 asid 是 per cpu 私有的，后面可能会扩展 全局的asid
 
-![Untitled](MMU/Untitled%2010.png)
+![Untitled](Untitled%2010.png)
 
 但是旧的版本 建议软件共用 asid，而且现在最新的代码也是共用 asid 的，**后面可以提一下 patch** 
 
-![Untitled](MMU/Untitled%2011.png)
+![Untitled](Untitled%2011.png)
 
 ### 代码流程
 
-![Untitled](MMU/Untitled%2012.png)
+![Untitled](Untitled%2012.png)
 
 ```c
 // 相关变量  

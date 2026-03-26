@@ -8,8 +8,6 @@ resources/_gen/
 *.dll
 *.so
 *.dylib
-*.png
-*.patch
 *.rpm
 
 # IDE

@@ -1,9 +1,10 @@
 +++
 title = "riscv 启动"
-date = 2025-11-12T00:00:00+08:00
-tags = ["riscv", "bringup", "linux", "c3000"]
+date = 2026-03-26T19:22:22.781486+08:00
+tags = ["riscv", "linux"]
 categories = ["riscv_linux"]
 +++
+# riscv 启动
 
 [riscv linux 参考启动流程_rsic-v的bootload-CSDN博客](https://blog.csdn.net/u011011827/article/details/121416872)
 
@@ -439,7 +440,7 @@ start_thread
 
 ## Debug Mode
 
-[debug mode](riscv%20%E5%90%AF%E5%8A%A8/debug%20mode.md)
+[debug mode](.//debug%20mode.md)
 
 ## riscv profle
 
@@ -475,11 +476,18 @@ rv64imafdch_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_z
 
 ```
 
-# 编译选项
+## riscv 性能监控规范
+
+[**RISC-V 性能监控规范**](.//RISC-V%20%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E8%A7%84%E8%8C%83.md)
+
+## 编译选项
 
 ```bash
 RISCV_ABI=lp64 # 使用软件浮点
 RISCV_ABI=lp64d # 使用硬件件浮点
+
+-march=rv64xx # 表示编译带哪些扩展，如 -march=rv64imad_zicsr_zifencei_zicbom
+-mabi=lp64x   # 表示要用什么 abi，lp64d 表示带硬件浮点
 
 # 查看 abi
 readelf -h your_test_bin
@@ -488,6 +496,15 @@ ELF Header:
 ...
   Flags:                             0x1, RVC, **soft-float ABI**
 ...
+
+# 查看 elf 用了哪些扩展，以及对应的版本（2p1 就是代表 2.1 版本）
+riscv64-unknown-linux-gnu-readelf -A your_test_bin
+Attribute Section: riscv
+File Attributes
+  Tag_RISCV_stack_align: 16-bytes
+  Tag_RISCV_arch: "rv64i2p1_m2p0_a2p1_f2p2_d2p2_zicsr2p0_zifencei2p0_zmmul1p0"
+  Tag_RISCV_priv_spec: 1
+  Tag_RISCV_priv_spec_minor: 11
 ```
 
 # linux 调试
@@ -599,7 +616,7 @@ c_show
 
 # 异常、中断
 
-[异常,中断](riscv%20%E5%90%AF%E5%8A%A8/%E5%BC%82%E5%B8%B8,%E4%B8%AD%E6%96%AD.md)
+[异常,中断](.//%E5%BC%82%E5%B8%B8%2C%E4%B8%AD%E6%96%AD.md)
 
 # PMP（物理内存保护）
 
@@ -633,7 +650,7 @@ csr_write(CSR_STIMECMP, next_tval);
 
 # MMU
 
-[MMU](riscv%20%E5%90%AF%E5%8A%A8/MMU.md)
+[MMU](.//MMU.md)
 
 # NUMA 实现
 
@@ -725,7 +742,7 @@ build_zonelists
 
 # 虚拟化
 
-[虚拟化](riscv%20%E5%90%AF%E5%8A%A8/%E8%99%9A%E6%8B%9F%E5%8C%96.md)
+[虚拟化](.//%E8%99%9A%E6%8B%9F%E5%8C%96.md)
 
 # dtb 嵌入 kernel
 
@@ -736,18 +753,17 @@ CONFIG_NONPORTABLE
 CONFIG_BUILTIN_DTB
 > Boot options > [*] Built-in device tree > (test/file) Built-in device tree source # dts文件在 arch/riscv/boot/dts/ 目录的相对路径，不要加后缀.dts
 
-# 内核需要如下修改
-1. 
+# 内核需要按照如下两种方式修改
+# 1. 这个通用一点
 mkdir arch/riscv/boot/dts/test
 cp your_dts arch/riscv/boot/dts/test 
 echo "dtb-y += file.dtb" > arch/riscv/boot/dts/test/Makefile
-# arch/riscv/boot/dts/Makefile 添加 subdir-y += test
+# arch/riscv/boot/dts/Makefile 添加 "subdir-y += test"
 
-2.
-mkdir arch/riscv/boot/dts/test
-cp your_dts arch/riscv/boot/dts/test
-# arch/riscv/boot/dts/Makefile 添加 dtb-y += $(srctree)/file.dtb
-# 只要添加好 dtb 的路径，编译的时候，会自动找对于的 path/xxx.dts 进行编译
+# 2. 直接放到 dts 目录下，不填写 platform
+cp your_dts arch/riscv/boot/dts/
+
+# 只要添加好 dtb 的路径（CONFIG_BUILTIN_DTB_SOURCE），编译的时候，会自动找对应的 path/xxx.dts 进行编译
 # %.dtb.o <- %.dtb.S <- %.dtb <- %.dts # scripts/Makefile.build
 ```
 
@@ -765,12 +781,12 @@ setup_arch
 
 - 自己实现的 early console
     
-    [0001-add-early-console.patch](riscv%20%E5%90%AF%E5%8A%A8/0001-add-early-console.patch)
+    [0001-add-early-console.patch](0001-add-early-console.patch)
     
     ```c
     // 启动配置 CONFIG_HVC_RISCV_SBI、CONFIG_RISCV_EARLY_CONSOLE
     // 注册 第一个 console
-    setup_arch
+    setup_arch 
     |- early_console_init
     	 |- hvc_sbi_early_init
     	 |	|- hvc_sbi_early_init_common(); // 配置 riscv_early_console_putc

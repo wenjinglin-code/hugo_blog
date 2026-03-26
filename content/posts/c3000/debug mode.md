@@ -1,13 +1,14 @@
 +++
-title = "riscv debug mode"
-date = 2025-11-12T00:00:00+08:00
-tags = ["riscv", "debug", "linux", "c3000"]
+title = "debug mode"
+date = 2026-03-26T19:22:22.782238+08:00
+tags = ["riscv", "linux"]
 categories = ["riscv_linux"]
 +++
+# debug mode
 
 # 概况
 
-![Untitled](debug%20mode/Untitled.png)
+![Untitled](Untitled.png)
 
 `debug mode` 是特殊的处理器模式，仅在 `hart` 由于外部调试而暂停时使用。
 
@@ -24,7 +25,7 @@ categories = ["riscv_linux"]
 
 ## dcsr(Debug Control and Status)
 
-![Untitled](debug%20mode/Untitled%201.png)
+![Untitled](Untitled%201.png)
 
 | **Field** | **Description** | **Access** | **Reset** |
 | --- | --- | --- | --- |
