@@ -59,8 +59,17 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // 获取所有文章内容
-    fetch('/index.xml')
+    // 获取所有文章内容 - 使用绝对路径确保在任何路径下都能正常工作
+    // 从当前 URL 路径中提取 baseURL 基础路径
+    const pathParts = window.location.pathname.split('/').filter(p => p);
+    let basePath = '';
+    if (pathParts.length > 0 && pathParts[0] !== '') {
+      // 假设第一个路径部分是博客的基础路径 (如 hugo_blog)
+      basePath = '/' + pathParts[0];
+    }
+    const indexPath = basePath + '/index.xml';
+    
+    fetch(indexPath)
       .then(response => response.text())
       .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
       .then(data => {
@@ -78,6 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         displayResults(results);
+      })
+      .catch(function(error) {
+        console.error('搜索出错:', error);
+        searchResults.innerHTML = '<p>搜索功能暂时不可用，请稍后再试。</p>';
       });
   }
   

@@ -80,7 +80,24 @@ categories = ["分类"]
 文章内容...
 ```
 ## [部署到 GitHub Pages](https://docs.github.com/zh/pages/quickstart)
+>> 每次更新，需要等比较长时间才更新界面
+### 方法1: 使用 github action 自动部署到 github.io
+>> 依赖 `.github/workflows/deploy.yml` 自动编译部署配置文件
+1. 在博客的源码仓库的 Settings 中找到 `Actions -> General` 选项
+   ```bash
+   # 给 actions 提供权限
+   1. Workflow permissions -> 选择 `Read and write permissions`
+   2. Workflow permissions -> 选择 `Allow GitHub Actions to create and approve pull requests`
+   3. 按下 `Save` 保存
+   ```
+2. 仓库的 Settings 中找到 `Pages` 选项
+   ```bash
+   1. Build and deployment -> Source: 选择 `GitHub Actions`
+   ```
+3. 仓库的 Settings 中找到 `Pages` 选项中，点击 `Visit site` 就可以访问了
+   一般地址为 `https://username.github.io/repostory_name/`
 
+### 方法2: 将静态页面部署到 github.io
 1. 在 GitHub 上创建新仓库
    ```bash
    github 上新建一个仓库，名为 username.github.io，username 为你的用户名
@@ -102,7 +119,7 @@ categories = ["分类"]
    ```
 4. 在仓库的 Settings 中找到 `Pages` 选项
    ```bash
-   1. Build and deployment -> Source: 选择 Deploy from a branch
+   1. Build and deployment -> Source: 选择 `Deploy from a branch`
    2. Build and deployment -> Branch: 选择 master，按下 Save 保存
    ```
 5. 访问 `https://your_username.github.io/`

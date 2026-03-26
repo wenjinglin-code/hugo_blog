@@ -1,35 +1,46 @@
+# GitHub Actions 工作流：部署 Hugo 博客到 GitHub Pages
+# 此工作流在推送到 master 分支时自动运行，也可手动触发
+
 name: Deploy to GitHub Pages
 
+# 触发条件：推送到 master 分支时触发，支持手动触发 (workflow_dispatch)
 on:
   push:
     branches: [ master ]
   workflow_dispatch:
 
+# 设置权限：读取内容、写入页面、写入 ID token
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# 作业定义
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      # 步骤 1: 检出代码，包含子模块，获取完整历史
       - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
+      # 步骤 2: 安装 Hugo 环境 (使用 extended 版本支持 SCSS 等)
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: 'latest'
           extended: true
 
+      # 步骤 3: 构建 Hugo 网站，清理目标目录并压缩
       - name: Build
         run: hugo --cleanDestinationDir;hugo --minify --baseURL https://wenjinglin-code.github.io/hugo_blog/
 
+      # 步骤 4: 部署到 GitHub Pages (仅在 master 分支触发时执行)
+      #         将构建成功后的 public 目录，push 到 gh-pages 分支
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/master'
