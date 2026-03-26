@@ -4,10 +4,6 @@
     <h1>{{ .Title }}</h1>
   </header>
   
-  <div class="content-body">
-    {{ .Content }}
-  </div>
-  
   <!-- 按年份分组显示文章 -->
   {{ if eq .Section "posts" }}
     {{ $allPages := .Pages }}

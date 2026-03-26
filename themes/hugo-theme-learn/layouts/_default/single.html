@@ -2,7 +2,7 @@
 <aside class="sidebar">
   {{ if .TableOfContents }}
     <h3>目录</h3>
-    <nav class="toc">
+    <nav class="toc" id="toc">
       {{ .TableOfContents }}
     </nav>
   {{ end }}
@@ -47,19 +47,96 @@
     </div>
   </header>
   
-  <div class="content-body">
+  <div class="content-body" id="contentBody">
     {{ .Content }}
   </div>
   
   {{ if .Params.tags }}
-  <footer class="content-footer">
-    <div class="tags">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-      {{ range .Params.tags }}
-        <a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>
-      {{ end }}
-    </div>
-  </footer>
+  <div class="tags">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+    {{ range .Params.tags }}
+      <a href="{{ "/hugo_blog/tags/" | relLangURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>
+    {{ end }}
+  </div>
+  {{ end }}
+
+  {{ if eq .Section "posts" }}
+  {{ $prev := .PrevInSection }}
+  {{ $next := .NextInSection }}
+  {{ if or $prev $next }}
+  <nav class="post-nav">
+    {{ if $prev }}
+    <a href="{{ $prev.RelPermalink }}" class="prev-post">
+      <span class="nav-label">← 上一篇</span>
+      <span class="nav-title">{{ $prev.Title }}</span>
+    </a>
+    {{ end }}
+    {{ if $next }}
+    <a href="{{ $next.RelPermalink }}" class="next-post">
+      <span class="nav-label">下一篇 →</span>
+      <span class="nav-title">{{ $next.Title }}</span>
+    </a>
+    {{ end }}
+  </nav>
+  {{ end }}
   {{ end }}
 </article>
+
+<script>
+  // 代码复制按钮
+  document.querySelectorAll('.content-body pre').forEach(pre => {
+    const button = document.createElement('button');
+    button.className = 'copy-button';
+    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+    button.title = '复制代码';
+    pre.style.position = 'relative';
+    pre.appendChild(button);
+    button.addEventListener('click', () => {
+      const code = pre.querySelector('code');
+      const text = code ? code.textContent : pre.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        button.classList.add('copied');
+        setTimeout(() => {
+          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+          button.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  });
+
+  // 图片懒加载
+  document.querySelectorAll('.content-body img').forEach(img => {
+    img.loading = 'lazy';
+  });
+
+  // 目录高亮跟随
+  const toc = document.getElementById('toc');
+  if (toc) {
+    const links = toc.querySelectorAll('a');
+    const headings = [];
+    document.querySelectorAll('.content-body h1, .content-body h2, .content-body h3, .content-body h4, .content-body h5, .content-body h6').forEach(heading => {
+      if (heading.id) {
+        headings.push({ id: heading.id, element: heading });
+      }
+    });
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      headings.forEach(heading => {
+        const rect = heading.element.getBoundingClientRect();
+        if (rect.top <= 120) {
+          current = heading.id;
+        }
+      });
+
+      links.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
+    });
+  }
+</script>
 {{ end }}

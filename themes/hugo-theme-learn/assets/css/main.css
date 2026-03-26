@@ -301,8 +301,6 @@ body {
 /* 内容头部 */
 .content-header {
   margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--gh-border-muted);
 }
 
 .content-header h1 {
@@ -1319,3 +1317,210 @@ body {
 .btn-secondary:hover {
   background-color: #f3f4f6;
 }
+
+/* ==================== 新增功能样式 ==================== */
+
+/* 返回顶部按钮 */
+.back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--gh-bg-primary);
+  border: 1px solid var(--gh-border-primary);
+  color: var(--gh-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  box-shadow: var(--gh-shadow-md);
+  z-index: 1000;
+}
+
+.back-to-top:hover {
+  background-color: var(--gh-primary);
+  color: white;
+  border-color: var(--gh-primary);
+  transform: translateY(-2px);
+}
+
+.back-to-top.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 阅读进度条 */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, var(--gh-primary), var(--gh-primary-hover));
+  transition: width 0.1s ease-out;
+  z-index: 1001;
+}
+
+/* 代码复制按钮 */
+.copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--gh-code-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.content pre:hover .copy-button {
+  opacity: 1;
+}
+
+.copy-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.copy-button.copied {
+  background-color: #2da44e;
+  color: white;
+}
+
+/* 相关文章 */
+.related-posts {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gh-border-muted);
+}
+
+.related-posts h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gh-text-primary);
+  margin-bottom: 16px;
+}
+
+.related-posts ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.related-posts li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gh-border-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.related-posts li:last-child {
+  border-bottom: none;
+}
+
+.related-posts li a {
+  color: var(--gh-text-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.related-posts li a:hover {
+  color: var(--gh-text-link-hover);
+  text-decoration: underline;
+}
+
+.related-posts li .date {
+  color: var(--gh-text-secondary);
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+/* 上一篇/下一篇导航 */
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gh-border-muted);
+}
+
+.post-nav a {
+  flex: 1;
+  padding: 16px;
+  background: var(--gh-bg-secondary);
+  border: 1px solid var(--gh-border-primary);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.post-nav a:hover {
+  border-color: var(--gh-primary);
+  background-color: rgba(9, 105, 218, 0.05);
+}
+
+.post-nav .prev-post {
+  text-align: left;
+}
+
+.post-nav .next-post {
+  text-align: right;
+}
+
+.post-nav .nav-label {
+  display: block;
+  font-size: 12px;
+  color: var(--gh-text-secondary);
+  margin-bottom: 4px;
+}
+
+.post-nav .nav-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gh-text-primary);
+}
+
+@media (max-width: 768px) {
+  .post-nav {
+    flex-direction: column;
+  }
+  
+  .post-nav .next-post {
+    text-align: left;
+  }
+}
+
+/* 目录高亮样式优化 */
+.toc ul li a.active {
+  color: var(--gh-primary);
+  background-color: rgba(9, 105, 218, 0.1);
+  font-weight: 500;
+}
+
+.toc ul li a.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background-color: var(--gh-primary);
+  border-radius: 0 2px 2px 0;
+}
+

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://wenjinglin-code.github.io/hugo_blog/sitemap.xml

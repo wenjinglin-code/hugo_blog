@@ -9,5 +9,5 @@ date = 2025-11-12T00:00:00+08:00
 
 ## 联系方式
 
-- 邮箱: your-email@example.com
-- GitHub: [your-github-username](https://github.com/your-github-username)
+- 邮箱: jinglin.wen@foxmail.com
+- GitHub: [wenjinglin-code](https://github.com/wenjinglin-code)

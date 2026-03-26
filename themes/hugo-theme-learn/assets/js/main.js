@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // 兼容 class="toc" 和 id="TableOfContents" 两种选择器
   const toc = document.querySelector('.toc') || document.getElementById('TableOfContents');
   if (!toc) return;
+  
+  // 防止重复执行
+  if (toc.dataset.processed === 'true') return;
+  toc.dataset.processed = 'true';
 
   const tocUl = toc.querySelector('ul');
   if (!tocUl) return;
