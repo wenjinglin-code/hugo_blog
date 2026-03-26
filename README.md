@@ -104,7 +104,9 @@ categories = ["分类"]
    ```
 2. 仓库的 Settings 中找到 `Pages` 选项
    ```bash
-   1. Build and deployment -> Source: 选择 `GitHub Actions`
+   # 1. Build and deployment -> Source: 选择 `GitHub Actions`
+   1. Build and deployment -> Source: 选择 `Deploy from a branch`
+   2. Build and deployment -> Branch: 选择 gh-pages，按下 Save 保存
    ```
 3. 仓库的 Settings 中找到 `Pages` 选项中，点击 `Visit site` 就可以访问了
    一般地址为 `https://username.github.io/repostory_name/`
