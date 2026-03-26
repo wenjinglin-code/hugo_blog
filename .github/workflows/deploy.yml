@@ -41,6 +41,10 @@ jobs:
       - name: Build
         run: hugo --cleanDestinationDir;hugo --minify --baseURL https://wenjinglin-code.github.io/hugo_blog/
 
+      # 步骤 3.5: 清理不必要的文件，避免 Artifact 问题
+      - name: Clean up
+        run: rm -rf public/resources
+
       # 使用 GitHub Action 
       # 步骤 4: 上传构建产物到 Artifact
       - name: Upload Artifact
@@ -51,10 +55,6 @@ jobs:
           if-no-files-found: error
           retention-days: 0
           compression-level: 6
-          include-hidden-files: false
-          exclude: |
-            resources/**
-            .gitignore
 
       # 步骤 5: 部署到 GitHub Pages (仅在 master 分支触发时执行)
       - name: Deploy to GitHub Pages
