@@ -556,6 +556,9 @@ body {
   border-radius: 6px;
   padding: 12px 16px;
   margin-bottom: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .toc h3 {
@@ -568,6 +571,10 @@ body {
   border-bottom: none;
   padding-bottom: 8px;
   margin-bottom: 8px;
+  position: sticky;
+  top: 0;
+  background: var(--gh-sidebar-bg);
+  z-index: 1;
 }
 
 /* 目录折叠功能 - GitHub 风格 */
@@ -1522,5 +1529,35 @@ body {
   height: 60%;
   background-color: var(--gh-primary);
   border-radius: 0 2px 2px 0;
+}
+
+/* 搜索关键词高亮样式 */
+.search-highlight {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 500;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+}
+
+/* 搜索高亮脉冲动画 */
+.search-highlight.pulse {
+  animation: highlightPulse 1.5s ease-out;
+}
+
+@keyframes highlightPulse {
+  0% {
+    background-color: #ffc107;
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.5);
+  }
+  50% {
+    background-color: #ffc107;
+    box-shadow: 0 0 0 8px rgba(255, 193, 7, 0.3);
+  }
+  100% {
+    background-color: #fff3cd;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+  }
 }
 

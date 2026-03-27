@@ -1,0 +1,116 @@
+{{ define "main" }}
+<div class="content error-page">
+  <div class="error-content">
+    <div class="error-code">404</div>
+    <h1 class="error-title">页面未找到</h1>
+    <p class="error-message">抱歉，您访问的页面不存在或已被移除。</p>
+    <div class="error-suggestion">
+      <p>您可以：</p>
+      <ul>
+        <li><a href="{{ "/" | relLangURL }}">返回首页</a></li>
+        <li><a href="{{ "search" | relLangURL }}">搜索内容</a></li>
+        <li><a href="{{ "posts" | relLangURL }}">浏览文章归档</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<style>
+.error-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.error-content {
+  max-width: 480px;
+}
+
+.error-code {
+  font-size: 96px;
+  font-weight: 700;
+  color: var(--gh-border-primary);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -0.05em;
+}
+
+.error-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--gh-text-primary);
+  margin-bottom: 12px;
+  border: none;
+  padding: 0;
+}
+
+.error-message {
+  font-size: 16px;
+  color: var(--gh-text-secondary);
+  margin-bottom: 32px;
+}
+
+.error-suggestion {
+  text-align: left;
+  padding: 20px;
+  background: var(--gh-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--gh-border-muted);
+}
+
+.error-suggestion p {
+  font-size: 14px;
+  color: var(--gh-text-secondary);
+  margin-bottom: 12px;
+}
+
+.error-suggestion ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-suggestion li {
+  margin-bottom: 8px;
+}
+
+.error-suggestion li:last-child {
+  margin-bottom: 0;
+}
+
+.error-suggestion a {
+  color: var(--gh-text-link);
+  text-decoration: none;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: var(--gh-transition-fast);
+}
+
+.error-suggestion a:hover {
+  background: var(--gh-hover-bg);
+  color: var(--gh-text-link-hover);
+  text-decoration: underline;
+}
+
+.error-suggestion a::before {
+  content: '→';
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .error-code {
+    font-size: 72px;
+  }
+  
+  .error-title {
+    font-size: 24px;
+  }
+}
+</style>
+{{ end }}

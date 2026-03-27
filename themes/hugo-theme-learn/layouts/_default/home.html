@@ -26,7 +26,7 @@
           <a href="{{ .RelPermalink }}" class="post-title">{{ .Title }}</a>
           <span class="post-date">{{ .Date.Format "2006-01-02" }}</span>
         </div>
-        <p class="post-summary">{{ .Summary }}</p>
+        <p class="post-summary">{{ .Summary | truncate 80 }}</p>
         {{ if .Params.tags }}
         <div class="post-tags">
           {{ range first 3 .Params.tags }}

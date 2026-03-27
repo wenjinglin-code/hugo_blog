@@ -51,11 +51,11 @@
     {{ .Content }}
   </div>
   
-  {{ if .Params.tags }}
+    {{ if .Params.tags }}
   <div class="tags">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
     {{ range .Params.tags }}
-      <a href="{{ "/hugo_blog/tags/" | relLangURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>
+      <a href="{{ "tags" | relLangURL }}/{{ . | urlize }}/" class="tag">{{ . }}</a>
     {{ end }}
   </div>
   {{ end }}
@@ -81,6 +81,134 @@
   {{ end }}
   {{ end }}
 </article>
+
+<!-- Lightbox for image viewing -->
+<div id="lightbox" class="lightbox">
+  <button class="lightbox-close" title="关闭 (ESC)">&times;</button>
+  <div class="lightbox-image-container">
+    <img class="lightbox-image" src="" alt="">
+  </div>
+  <div class="lightbox-controls">
+    <button class="lightbox-btn" id="lightbox-zoom-out" title="缩小">−</button>
+    <div class="lightbox-zoom-info">
+      <span id="lightbox-zoom-level">100%</span>
+      <button class="lightbox-btn" id="lightbox-reset" title="重置">重置</button>
+    </div>
+    <button class="lightbox-btn" id="lightbox-zoom-in" title="放大">+</button>
+  </div>
+</div>
+
+<style>
+.lightbox {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 10000;
+  justify-content: center;
+  align-items: center;
+  cursor: zoom-out;
+  overflow: hidden;
+}
+
+.lightbox.active {
+  display: flex;
+}
+
+.lightbox-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.lightbox-image {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+  transition: transform 0.1s ease-out;
+  transform-origin: center center;
+}
+
+.lightbox-image.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 40px;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  line-height: 1;
+  transition: opacity 0.2s;
+  z-index: 10001;
+}
+
+.lightbox-close:hover {
+  opacity: 0.7;
+}
+
+.lightbox-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10001;
+}
+
+.lightbox-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.lightbox-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.lightbox-zoom-info {
+  color: #fff;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>
 
 <script>
   // 代码复制按钮
@@ -110,7 +238,224 @@
     img.loading = 'lazy';
   });
 
-  // 目录高亮跟随
+  // Lightbox 图片点击查看 + 缩放 + 拖拽
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = lightbox ? lightbox.querySelector('.lightbox-image') : null;
+  const lightboxClose = lightbox ? lightbox.querySelector('.lightbox-close') : null;
+  const zoomLevelEl = document.getElementById('lightbox-zoom-level');
+  const zoomInBtn = document.getElementById('lightbox-zoom-in');
+  const zoomOutBtn = document.getElementById('lightbox-zoom-out');
+  const resetBtn = document.getElementById('lightbox-reset');
+
+  if (lightbox && lightboxImg && lightboxClose) {
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let lastTranslateX = 0;
+    let lastTranslateY = 0;
+
+    function updateTransform() {
+      lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      if (zoomLevelEl) {
+        zoomLevelEl.textContent = Math.round(scale * 100) + '%';
+      }
+    }
+
+    function resetTransform() {
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      updateTransform();
+    }
+
+    // 点击图片打开 Lightbox
+    document.querySelectorAll('.content-body img').forEach(img => {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', () => {
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        resetTransform();
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    // 鼠标滚轮缩放
+    lightbox.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      const newScale = Math.min(Math.max(scale + delta, 0.1), 10);
+      
+      // 如果缩小到1或更小，重置位置
+      if (newScale <= 1) {
+        translateX = 0;
+        translateY = 0;
+      }
+      
+      scale = newScale;
+      updateTransform();
+    });
+
+    // 拖拽平移
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragStartTranslateX = 0;
+    let dragStartTranslateY = 0;
+
+    lightboxImg.addEventListener('mousedown', (e) => {
+      if (scale > 1) {
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragStartTranslateX = translateX;
+        dragStartTranslateY = translateY;
+        lightboxImg.style.cursor = 'grabbing';
+        lightboxImg.style.transition = 'none';
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = e.clientY - dragStartY;
+        translateX = dragStartTranslateX + deltaX;
+        translateY = dragStartTranslateY + deltaY;
+        
+        // 限制拖拽边界（带弹性效果）
+        const maxTranslateX = (lightbox.clientWidth * (scale - 1)) / 2;
+        const maxTranslateY = (lightbox.clientHeight * (scale - 1)) / 2;
+        
+        if (maxTranslateX > 0) {
+          translateX = Math.max(-maxTranslateX, Math.min(maxTranslateX, translateX));
+        }
+        if (maxTranslateY > 0) {
+          translateY = Math.max(-maxTranslateY, Math.min(maxTranslateY, translateY));
+        }
+        
+        updateTransform();
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        lightboxImg.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
+        lightboxImg.style.transition = 'transform 0.1s ease-out';
+      }
+    });
+
+    // 鼠标离开时停止拖拽
+    document.addEventListener('mouseleave', () => {
+      if (isDragging) {
+        isDragging = false;
+        lightboxImg.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
+        lightboxImg.style.transition = 'transform 0.1s ease-out';
+      }
+    });
+
+    // 双击重置
+    lightboxImg.addEventListener('dblclick', () => {
+      resetTransform();
+    });
+
+    // 按钮缩放控制
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', () => {
+        scale = Math.min(scale + 0.25, 10);
+        updateTransform();
+      });
+    }
+
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', () => {
+        const newScale = Math.max(scale - 0.25, 0.1);
+        if (newScale <= 1) {
+          translateX = 0;
+          translateY = 0;
+        }
+        scale = newScale;
+        updateTransform();
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetTransform);
+    }
+
+    // 点击关闭按钮关闭
+    lightboxClose.addEventListener('click', () => {
+      lightbox.classList.remove('active');
+      resetTransform();
+      document.body.style.overflow = '';
+    });
+
+    // 点击遮罩关闭（仅在缩放≤1时）
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox && scale <= 1) {
+        lightbox.classList.remove('active');
+        resetTransform();
+        document.body.style.overflow = '';
+      }
+    });
+
+    // ESC 键关闭
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+        lightbox.classList.remove('active');
+        resetTransform();
+        document.body.style.overflow = '';
+      }
+    });
+
+    // 关闭时重置状态
+    lightbox.addEventListener('close', resetTransform);
+  }
+
+  // 搜索关键词高亮和滚动定位
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQuery = urlParams.get('q');
+  if (searchQuery) {
+    const contentBody = document.getElementById('contentBody');
+    if (contentBody) {
+      const regex = new RegExp('(' + searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+      let found = false;
+      
+      function highlightAndScroll(node) {
+        if (found) return;
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.textContent.toLowerCase().includes(searchQuery.toLowerCase())) {
+            const span = document.createElement('span');
+            span.innerHTML = node.textContent.replace(regex, '<mark class="search-highlight">$1</mark>');
+            node.parentNode.replaceChild(span, node);
+            
+            // 滚动到第一个高亮位置
+            setTimeout(() => {
+              const firstHighlight = document.querySelector('.search-highlight');
+              if (firstHighlight) {
+                firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstHighlight.classList.add('pulse');
+              }
+            }, 100);
+            found = true;
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE && !['SCRIPT', 'STYLE', 'MARK'].includes(node.tagName)) {
+          const children = Array.from(node.childNodes);
+          for (const child of children) {
+            highlightAndScroll(child);
+            if (found) break;
+          }
+        }
+      }
+      
+      highlightAndScroll(contentBody);
+    }
+  }
+
+  // 目录高亮跟随 + 自动滚动
   const toc = document.getElementById('toc');
   if (toc) {
     const links = toc.querySelectorAll('a');
@@ -121,6 +466,36 @@
       }
     });
 
+    let isScrollingToc = false;
+    let scrollTimeout = null;
+
+    function scrollActiveLinkIntoView(link) {
+      if (isScrollingToc) return;
+      
+      // 检查链接是否在视口内可见
+      const tocRect = toc.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      
+      // 如果链接顶部在目录可见区域上方，或底部在可见区域下方
+      const topThreshold = tocRect.top + 60; // 留出一些边距
+      const bottomThreshold = tocRect.bottom - 20;
+      
+      if (linkRect.top < topThreshold || linkRect.bottom > bottomThreshold) {
+        isScrollingToc = true;
+        link.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest'
+        });
+        
+        // 防止频繁触发
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          isScrollingToc = false;
+        }, 500);
+      }
+    }
+
     window.addEventListener('scroll', () => {
       let current = '';
       headings.forEach(heading => {
@@ -130,12 +505,19 @@
         }
       });
 
+      let activeLink = null;
       links.forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('href') === '#' + current) {
           link.classList.add('active');
+          activeLink = link;
         }
       });
+
+      // 当找到高亮链接时，自动滚动目录
+      if (activeLink) {
+        scrollActiveLinkIntoView(activeLink);
+      }
     });
   }
 </script>

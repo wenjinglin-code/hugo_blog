@@ -4,6 +4,10 @@ defaultContentLanguage = 'zh-cn'
 title = '我的个人知识库'
 theme = 'hugo-theme-learn'
 
+# 首页输出配置 - 包含 JSON 格式
+[outputs]
+home = ["HTML", "JSON", "RSS"]
+
 # 菜单配置
 [[menu.main]]
 name = "首页"

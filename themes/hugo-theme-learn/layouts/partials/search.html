@@ -1,47 +1,114 @@
 <div class="search-box">
   <input type="text" id="search-input" placeholder="搜索知识库...">
-  <button id="search-button">搜索</button>
+  <button id="search-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    搜索
+  </button>
 </div>
 <div id="search-results"></div>
 
 <style>
 .search-box {
-  margin-bottom: 1rem;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
 #search-input {
-  width: 70%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--gh-border-primary);
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: var(--gh-bg-primary);
+  transition: var(--gh-transition-fast);
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: var(--gh-primary);
+  box-shadow: var(--gh-shadow-focus);
 }
 
 #search-button {
-  padding: 0.5rem 1rem;
-  background-color: #3498db;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background-color: var(--gh-primary);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: var(--gh-transition-fast);
 }
 
 #search-button:hover {
-  background-color: #2980b9;
+  background-color: var(--gh-primary-hover);
 }
 
 #search-results {
-  margin-top: 1rem;
+  margin-top: 16px;
+}
+
+#search-results p {
+  color: var(--gh-text-secondary);
+  margin-bottom: 16px;
+}
+
+#search-results mark {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
 .search-result {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--gh-border-primary);
+  border-radius: 6px;
+  background: var(--gh-bg-primary);
+  transition: var(--gh-transition-fast);
+}
+
+.search-result:hover {
+  border-color: var(--gh-primary);
+  box-shadow: var(--gh-shadow-sm);
 }
 
 .search-result h3 {
-  margin-top: 0;
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.search-result h3 a {
+  color: var(--gh-text-link);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.search-result h3 a:hover {
+  color: var(--gh-text-link-hover);
+  text-decoration: underline;
+}
+
+.search-result .snippet-link {
+  color: var(--gh-text-secondary);
+  text-decoration: none;
+  display: block;
+  font-size: 14px;
+  line-height: 1.6;
+  transition: color 0.2s;
+}
+
+.search-result .snippet-link:hover {
+  color: var(--gh-text-link);
 }
 </style>
 
@@ -51,42 +118,60 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchButton = document.getElementById('search-button');
   const searchResults = document.getElementById('search-results');
   
-  // 简单的搜索功能
+  function getBasePath() {
+    const pathParts = window.location.pathname.split('/').filter(p => p);
+    if (pathParts.length > 0 && pathParts[0] !== '') {
+      return '/' + pathParts[0];
+    }
+    return '';
+  }
+  
   function performSearch() {
-    const query = searchInput.value.toLowerCase();
+    const query = searchInput.value.trim();
     if (!query) {
       searchResults.innerHTML = '';
       return;
     }
     
-    // 获取所有文章内容 - 使用绝对路径确保在任何路径下都能正常工作
-    // 从当前 URL 路径中提取 baseURL 基础路径
-    const pathParts = window.location.pathname.split('/').filter(p => p);
-    let basePath = '';
-    if (pathParts.length > 0 && pathParts[0] !== '') {
-      // 假设第一个路径部分是博客的基础路径 (如 hugo_blog)
-      basePath = '/' + pathParts[0];
-    }
-    const indexPath = basePath + '/index.xml';
+    const basePath = getBasePath();
+    const indexPath = basePath + '/index.json';
     
     fetch(indexPath)
-      .then(response => response.text())
-      .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
-      .then(data => {
-        const items = data.querySelectorAll("item");
-        let results = [];
+      .then(response => {
+        if (!response.ok) throw new Error('无法加载搜索索引');
+        return response.json();
+      })
+      .then(posts => {
+        const queryLower = query.toLowerCase();
+        const results = [];
         
-        items.forEach(item => {
-          const title = item.querySelector("title").textContent;
-          const description = item.querySelector("description").textContent;
-          const link = item.querySelector("link").textContent;
+        posts.forEach(post => {
+          const titleMatch = post.title.toLowerCase().includes(queryLower);
+          const contentMatch = post.content && post.content.toLowerCase().includes(queryLower);
+          const categoryMatch = post.categories && post.categories.some(c => c.toLowerCase().includes(queryLower));
+          const tagMatch = post.tags && post.tags.some(t => t.toLowerCase().includes(queryLower));
           
-          if (title.toLowerCase().includes(query) || description.toLowerCase().includes(query)) {
-            results.push({title, description, link});
+          if (titleMatch || contentMatch || categoryMatch || tagMatch) {
+            let snippet = '';
+            if (contentMatch && post.content) {
+              const contentLower = post.content.toLowerCase();
+              const index = contentLower.indexOf(queryLower);
+              const start = Math.max(0, index - 50);
+              const end = Math.min(post.content.length, index + query.length + 100);
+              snippet = post.content.substring(start, end);
+              if (start > 0) snippet = '...' + snippet;
+              if (end < post.content.length) snippet = snippet + '...';
+            }
+            
+            results.push({
+              title: post.title,
+              link: post.permalink,
+              snippet: snippet
+            });
           }
         });
         
-        displayResults(results);
+        displayResults(results, query);
       })
       .catch(function(error) {
         console.error('搜索出错:', error);
@@ -94,24 +179,36 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
   
-  function displayResults(results) {
+  function highlightText(text, query) {
+    if (!query) return text;
+    const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+  }
+  
+  function displayResults(results, query) {
     if (results.length === 0) {
-      searchResults.innerHTML = '<p>未找到相关结果。</p>';
+      searchResults.innerHTML = '<p>未找到与 "' + query + '" 相关的结果。</p>';
       return;
     }
     
-    let html = '';
+    let html = '<p>找到 ' + results.length + ' 个结果：</p>';
     results.forEach(result => {
-      html += `
-        <div class="search-result">
-          <h3><a href="${result.link}">${result.title}</a></h3>
-          <p>${result.description.substring(0, 200)}...</p>
-        </div>
-      `;
+      const highlightedTitle = highlightText(result.title, query);
+      const highlightedSnippet = highlightText(result.snippet || '', query);
+      const encodedQuery = encodeURIComponent(query);
+      const linkToTop = result.link;  // 跳转到文章开头
+      const linkToContent = result.link + '?q=' + encodedQuery;  // 跳转到关键词位置
+      html += '<div class="search-result"><h3><a href="' + linkToTop + '">' + highlightedTitle + '</a></h3>';
+      if (result.snippet) {
+        html += '<p><a href="' + linkToContent + '" class="snippet-link">' + highlightedSnippet + '</a></p>';
+      }
+      html += '</div>';
     });
     
     searchResults.innerHTML = html;
   }
+
+
   
   searchButton.addEventListener('click', performSearch);
   searchInput.addEventListener('keyup', function(event) {
